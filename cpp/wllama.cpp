@@ -122,6 +122,8 @@ extern "C" const char *wllama_action(const char *name, const char *req_raw)
     // WLLAMA_ACTION(session_load)
     WLLAMA_ACTION(test_benchmark)
     WLLAMA_ACTION(test_perplexity)
+    WLLAMA_ACTION(lora_load)
+    WLLAMA_ACTION(lora_free)
 
     else
     {

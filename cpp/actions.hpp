@@ -27,6 +27,7 @@ struct app_t
   llama_batch batch = llama_batch_init(512, 0, 1);
   llama_tokens tokens;
   int32_t seed = LLAMA_DEFAULT_SEED;
+  std::vector<llama_adapter_lora *> lora_adapters;
 };
 
 inline std::vector<char> convert_string_to_buf(std::string &input)
@@ -95,6 +96,16 @@ private:
 
 void free_all(app_t &app)
 {
+  for (auto *adapter : app.lora_adapters)
+  {
+    if (adapter != nullptr)
+    {
+      if (app.ctx != nullptr)
+        llama_rm_adapter_lora(app.ctx, adapter);
+      llama_adapter_lora_free(adapter);
+    }
+  }
+  app.lora_adapters.clear();
   if (app.ctx != nullptr)
     llama_free(app.ctx);
   if (app.model != nullptr)
@@ -946,4 +957,53 @@ glue_msg_chat_format_res action_chat_format(app_t &app, const char *req_raw)
     res.message.value = std::string(e.what());
     return res;
   }
+}
+
+glue_msg_lora_load_res action_lora_load(app_t &app, const char *req_raw)
+{
+  PARSE_REQ(glue_msg_lora_load_req);
+  if (app.model == nullptr || app.ctx == nullptr)
+  {
+    throw app_exception("Model must be loaded before loading LoRA adapter");
+  }
+  std::string lora_path = "models/" + req.lora_path.value;
+  float scale = req.scale.value;
+  if (scale == 0.0f) scale = 1.0f;
+
+  llama_adapter_lora *adapter = llama_adapter_lora_init(app.model, lora_path.c_str());
+  if (adapter == nullptr)
+  {
+    throw app_exception("Failed to load LoRA adapter from: " + lora_path);
+  }
+  int32_t ret = llama_set_adapter_lora(app.ctx, adapter, scale);
+  if (ret != 0)
+  {
+    llama_adapter_lora_free(adapter);
+    throw app_exception("Failed to apply LoRA adapter");
+  }
+  int adapter_id = (int)app.lora_adapters.size();
+  app.lora_adapters.push_back(adapter);
+
+  glue_msg_lora_load_res res;
+  res.success.value = true;
+  res.adapter_id.value = adapter_id;
+  return res;
+}
+
+glue_msg_lora_free_res action_lora_free(app_t &app, const char *req_raw)
+{
+  PARSE_REQ(glue_msg_lora_free_req);
+  int id = req.adapter_id.value;
+  if (id < 0 || id >= (int)app.lora_adapters.size() || app.lora_adapters[id] == nullptr)
+  {
+    throw app_exception("Invalid adapter_id");
+  }
+  if (app.ctx != nullptr)
+    llama_rm_adapter_lora(app.ctx, app.lora_adapters[id]);
+  llama_adapter_lora_free(app.lora_adapters[id]);
+  app.lora_adapters[id] = nullptr;
+
+  glue_msg_lora_free_res res;
+  res.success.value = true;
+  return res;
 }

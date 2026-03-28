@@ -987,6 +987,64 @@ export const GLUE_MESSAGE_PROTOTYPES: { [name: string]: GlueMessageProto } = {
         "isNullable": false
       }
     ]
+  },
+  "llod_req": {
+    "name": "llod_req",
+    "structName": "glue_msg_lora_load_req",
+    "className": "GlueMsgLoraLoadReq",
+    "fields": [
+      {
+        "type": "str",
+        "name": "lora_path",
+        "isNullable": false
+      },
+      {
+        "type": "float",
+        "name": "scale",
+        "isNullable": false
+      }
+    ]
+  },
+  "llod_res": {
+    "name": "llod_res",
+    "structName": "glue_msg_lora_load_res",
+    "className": "GlueMsgLoraLoadRes",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "success",
+        "isNullable": false
+      },
+      {
+        "type": "int",
+        "name": "adapter_id",
+        "isNullable": false
+      }
+    ]
+  },
+  "lfre_req": {
+    "name": "lfre_req",
+    "structName": "glue_msg_lora_free_req",
+    "className": "GlueMsgLoraFreeReq",
+    "fields": [
+      {
+        "type": "int",
+        "name": "adapter_id",
+        "isNullable": false
+      }
+    ]
+  },
+  "lfre_res": {
+    "name": "lfre_res",
+    "structName": "glue_msg_lora_free_res",
+    "className": "GlueMsgLoraFreeRes",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "success",
+        "isNullable": false
+      }
+    ]
   }
 };
 
@@ -1342,5 +1400,31 @@ export interface GlueMsgChatFormatRes {
   formatted_chat: string;
 }
 
+// struct glue_msg_lora_load_req
+export interface GlueMsgLoraLoadReq {
+  _name: "llod_req";
+  lora_path: string;
+  scale: number;
+}
 
-export type GlueMsg = GlueMsgError | GlueMsgLoadReq | GlueMsgLoadRes | GlueMsgSetOptionsReq | GlueMsgSetOptionsRes | GlueMsgSamplingInitReq | GlueMsgSamplingInitRes | GlueMsgGetVocabReq | GlueMsgGetVocabRes | GlueMsgLookupTokenReq | GlueMsgLookupTokenRes | GlueMsgTokenizeReq | GlueMsgTokenizeRes | GlueMsgDetokenizeReq | GlueMsgDetokenizeRes | GlueMsgDecodeReq | GlueMsgDecodeRes | GlueMsgEncodeReq | GlueMsgEncodeRes | GlueMsgSamplingSampleReq | GlueMsgSamplingSampleRes | GlueMsgSamplingAcceptReq | GlueMsgSamplingAcceptRes | GlueMsgGetLogitsReq | GlueMsgGetLogitsRes | GlueMsgGetEmbeddingsReq | GlueMsgGetEmbeddingsRes | GlueMsgGetKvRemoveReq | GlueMsgGetKvRemoveRes | GlueMsgGetKvClearReq | GlueMsgGetKvClearRes | GlueMsgSessionSaveReq | GlueMsgSessionSaveRes | GlueMsgSessionLoadReq | GlueMsgSessionLoadRes | GlueMsgStatusReq | GlueMsgStatusRes | GlueMsgTestBenchmarkReq | GlueMsgTestBenchmarkRes | GlueMsgTestPerplexityReq | GlueMsgTestPerplexityRes | GlueMsgChatFormatReq | GlueMsgChatFormatRes;
+// struct glue_msg_lora_load_res
+export interface GlueMsgLoraLoadRes {
+  _name: "llod_res";
+  success: boolean;
+  adapter_id: number;
+}
+
+// struct glue_msg_lora_free_req
+export interface GlueMsgLoraFreeReq {
+  _name: "lfre_req";
+  adapter_id: number;
+}
+
+// struct glue_msg_lora_free_res
+export interface GlueMsgLoraFreeRes {
+  _name: "lfre_res";
+  success: boolean;
+}
+
+
+export type GlueMsg = GlueMsgError | GlueMsgLoadReq | GlueMsgLoadRes | GlueMsgSetOptionsReq | GlueMsgSetOptionsRes | GlueMsgSamplingInitReq | GlueMsgSamplingInitRes | GlueMsgGetVocabReq | GlueMsgGetVocabRes | GlueMsgLookupTokenReq | GlueMsgLookupTokenRes | GlueMsgTokenizeReq | GlueMsgTokenizeRes | GlueMsgDetokenizeReq | GlueMsgDetokenizeRes | GlueMsgDecodeReq | GlueMsgDecodeRes | GlueMsgEncodeReq | GlueMsgEncodeRes | GlueMsgSamplingSampleReq | GlueMsgSamplingSampleRes | GlueMsgSamplingAcceptReq | GlueMsgSamplingAcceptRes | GlueMsgGetLogitsReq | GlueMsgGetLogitsRes | GlueMsgGetEmbeddingsReq | GlueMsgGetEmbeddingsRes | GlueMsgGetKvRemoveReq | GlueMsgGetKvRemoveRes | GlueMsgGetKvClearReq | GlueMsgGetKvClearRes | GlueMsgSessionSaveReq | GlueMsgSessionSaveRes | GlueMsgSessionLoadReq | GlueMsgSessionLoadRes | GlueMsgStatusReq | GlueMsgStatusRes | GlueMsgTestBenchmarkReq | GlueMsgTestBenchmarkRes | GlueMsgTestPerplexityReq | GlueMsgTestPerplexityRes | GlueMsgChatFormatReq | GlueMsgChatFormatRes | GlueMsgLoraLoadReq | GlueMsgLoraLoadRes | GlueMsgLoraFreeReq | GlueMsgLoraFreeRes;

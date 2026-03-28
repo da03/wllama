@@ -177,6 +177,15 @@ export class ProxyToWorker {
   }
 
   /**
+   * Stage a file into the WASM virtual filesystem after module init.
+   * Used for loading LoRA adapters at runtime.
+   */
+  async writeFile(fileName: string, blob: Blob): Promise<void> {
+    const id = await this.fileAlloc(fileName, blob.size);
+    await this.fileWrite(id, blob);
+  }
+
+  /**
    * Write a Blob to heapfs
    */
   private async fileWrite(fileId: number, blob: Blob): Promise<void> {

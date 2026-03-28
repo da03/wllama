@@ -872,3 +872,29 @@ struct glue_msg_chat_format_res
   GLUE_FIELD(str, message)
   GLUE_FIELD(str, formatted_chat)
 };
+
+struct glue_msg_lora_load_req
+{
+  GLUE_HANDLER("llod_req")
+  GLUE_FIELD(str, lora_path)
+  GLUE_FIELD(float, scale)
+};
+
+struct glue_msg_lora_load_res
+{
+  GLUE_HANDLER("llod_res")
+  GLUE_FIELD(bool, success)
+  GLUE_FIELD(int, adapter_id)
+};
+
+struct glue_msg_lora_free_req
+{
+  GLUE_HANDLER("lfre_req")
+  GLUE_FIELD(int, adapter_id)
+};
+
+struct glue_msg_lora_free_res
+{
+  GLUE_HANDLER("lfre_res")
+  GLUE_FIELD(bool, success)
+};

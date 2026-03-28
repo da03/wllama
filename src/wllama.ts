@@ -30,6 +30,8 @@ import type {
   GlueMsgTestBenchmarkRes,
   GlueMsgTestPerplexityRes,
   GlueMsgTokenizeRes,
+  GlueMsgLoraLoadRes,
+  GlueMsgLoraFreeRes,
 } from './glue/messages';
 import { LIBLLAMA_VERSION } from './workers-code/generated';
 
@@ -1228,6 +1230,85 @@ export class Wllama {
       throw new WllamaError('kvClear unknown error');
     }
     this.nCachedTokens = 0;
+  }
+
+  // ---- LoRA adapter methods ----
+
+  /**
+   * Load a LoRA adapter from a URL or Blob and apply it to the current model.
+   * The base model must be loaded first via loadModel/loadModelFromUrl/loadModelFromHF.
+   *
+   * @param source URL string or Blob containing a GGUF LoRA adapter file
+   * @param config.scale Adapter scale factor (default 1.0)
+   * @returns Adapter ID that can be used with freeLoraAdapter()
+   */
+  async loadLoraAdapter(
+    source: string | Blob,
+    config: { scale?: number } = {}
+  ): Promise<number> {
+    this.checkModelLoaded();
+    const fileName = `lora-${Date.now()}.gguf`;
+    let blob: Blob;
+    if (typeof source === 'string') {
+      const response = await fetch(source);
+      if (!response.ok) {
+        throw new WllamaError(
+          `Failed to download LoRA adapter: ${response.status} ${response.statusText}`,
+          'download_error'
+        );
+      }
+      blob = await response.blob();
+    } else {
+      blob = source;
+    }
+    await this.proxy.writeFile(fileName, blob);
+    const result = await this.proxy.wllamaAction<GlueMsgLoraLoadRes>(
+      'lora_load',
+      {
+        _name: 'llod_req',
+        lora_path: fileName,
+        scale: config.scale ?? 1.0,
+      }
+    );
+    if (!result.success) {
+      throw new WllamaError('Failed to load LoRA adapter');
+    }
+    return result.adapter_id;
+  }
+
+  /**
+   * Load a LoRA adapter from HuggingFace Hub.
+   *
+   * @param repoId HuggingFace model/repo ID (e.g., "yuntian-deng/paw-programs")
+   * @param filePath Path within the repo (e.g., "abc123/adapter.gguf")
+   * @param config.scale Adapter scale factor (default 1.0)
+   * @returns Adapter ID
+   */
+  async loadLoraAdapterFromHF(
+    repoId: string,
+    filePath: string,
+    config: { scale?: number } = {}
+  ): Promise<number> {
+    const url = `https://huggingface.co/${repoId}/resolve/main/${filePath}`;
+    return this.loadLoraAdapter(url, config);
+  }
+
+  /**
+   * Remove and free a previously loaded LoRA adapter.
+   * @param adapterId The adapter ID returned by loadLoraAdapter()
+   */
+  async freeLoraAdapter(adapterId: number): Promise<void> {
+    this.checkModelLoaded();
+    const result = await this.proxy.wllamaAction<GlueMsgLoraFreeRes>(
+      'lora_free',
+      {
+        _name: 'lfre_req',
+        adapter_id: adapterId,
+      }
+    );
+    if (!result.success) {
+      throw new WllamaError('Failed to free LoRA adapter');
+    }
   }
 
   /**
