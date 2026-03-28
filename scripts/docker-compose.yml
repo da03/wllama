@@ -28,7 +28,7 @@ services:
 
         emcmake cmake ../..
         export EMCC_CFLAGS="$$SHARED_EMCC_CFLAGS"
-        emmake make wllama -j
+        emmake make wllama -j2
 
         cd ../..
         mkdir -p wasm/multi-thread
@@ -36,7 +36,7 @@ services:
         export EMCC_CFLAGS="" # temporary clear it
         emcmake cmake ../..
         export EMCC_CFLAGS="$$SHARED_EMCC_CFLAGS -pthread -sUSE_PTHREADS=1 -sPTHREAD_POOL_SIZE=Module[\\\"pthreadPoolSize\\\"]"
-        emmake make wllama -j
+        emmake make wllama -j2
 
         # go back to root
         cd ../..
