@@ -873,6 +873,11 @@ var GLUE_MESSAGE_PROTOTYPES = {
         "type": "bool",
         "name": "success",
         "isNullable": false
+      },
+      {
+        "type": "int",
+        "name": "n_tokens_loaded",
+        "isNullable": false
       }
     ]
   },
@@ -3339,6 +3344,49 @@ var Wllama = class {
       if (!result.success) {
         throw new WllamaError("Failed to free LoRA adapter");
       }
+    });
+  }
+  // ---- Session (KV cache) methods ----
+  /**
+   * Load a precomputed KV cache session from a URL or Blob.
+   * Restores the KV cache state so that previously-processed tokens
+   * don't need to be re-evaluated. Used for prompt prefix caching.
+   *
+   * @param source URL string or Blob containing the session state file
+   * @param tokens The token IDs that were used to generate this session state
+   * @returns Number of tokens loaded into the KV cache
+   */
+  loadSession(source, tokens) {
+    return __async(this, null, function* () {
+      this.checkModelLoaded();
+      const fileName = `session-${Date.now()}.bin`;
+      let blob;
+      if (typeof source === "string") {
+        const response = yield fetch(source);
+        if (!response.ok) {
+          throw new WllamaError(
+            `Failed to download session file: ${response.status} ${response.statusText}`,
+            "download_error"
+          );
+        }
+        blob = yield response.blob();
+      } else {
+        blob = source;
+      }
+      yield this.proxy.writeFile(fileName, blob);
+      const result = yield this.proxy.wllamaAction(
+        "session_load",
+        {
+          _name: "sesl_req",
+          session_path: fileName,
+          tokens
+        }
+      );
+      if (!result.success) {
+        throw new WllamaError("Failed to load session");
+      }
+      this.nCachedTokens = result.n_tokens_loaded;
+      return result.n_tokens_loaded;
     });
   }
   /**

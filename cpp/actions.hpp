@@ -728,57 +728,42 @@ glue_msg_get_kv_clear_res action_kv_clear(app_t &app, const char *req_raw)
   return res;
 }
 
-/*
-// save current session
-json action_session_save(app_t &app, json &body)
+glue_msg_session_load_res action_session_load(app_t &app, const char *req_raw)
 {
-  std::string session_path = body["session_path"];
-  llama_tokens dummy;
-  if (!llama_state_seq_save_file(
-          app.ctx,
-          session_path.c_str(),
-          0,            // seq_id
-          dummy.data(), // tokens
-          dummy.size()  // n_token_count
-          ))
+  PARSE_REQ(glue_msg_session_load_req);
+  if (app.ctx == nullptr)
   {
-    return json{{"error", "action_session_save failed"}};
+    throw app_exception("Model must be loaded before loading session");
   }
-  return json{
-      {"success", true},
-      {"tokens", app.tokens},
-  };
-}
+  std::string session_path = "models/" + req.session_path.value;
+  llama_tokens saved_tokens = std::move(req.tokens.arr);
 
-// load a session from disk
-json action_session_load(app_t &app, json &body)
-{
-  std::string session_path = body["session_path"];
-  llama_tokens saved_tokens = body["tokens"];
-  auto n_ctx = llama_n_ctx(app.ctx);
   size_t n_token_count_out = 0;
-  llama_tokens dummy;
+  llama_tokens tokens_out(saved_tokens.size());
   if (!llama_state_seq_load_file(
           app.ctx,
           session_path.c_str(),
-          0,                 // dest_seq_id
-          dummy.data(),      // tokens_out
-          dummy.capacity(),  // n_token_capacity
-          &n_token_count_out // n_token_count_out
+          0,                    // dest_seq_id
+          tokens_out.data(),    // tokens_out
+          tokens_out.capacity(), // n_token_capacity
+          &n_token_count_out    // n_token_count_out
           ))
   {
-    return json{{"error", "llama_load_session_file failed"}};
+    throw app_exception("Failed to load session from: " + session_path);
   }
-  // load tokens
+
   app.tokens.clear();
   app.tokens.reserve(saved_tokens.size());
   for (auto id : saved_tokens)
   {
     app.tokens.push_back(id);
   }
-  return json{{"success", true}};
+
+  glue_msg_session_load_res res;
+  res.success.value = true;
+  res.n_tokens_loaded.value = (int)saved_tokens.size();
+  return res;
 }
-*/
 
 // get the current status
 glue_msg_status_res action_current_status(app_t &app, const char *req_raw)

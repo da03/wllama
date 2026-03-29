@@ -801,6 +801,7 @@ struct glue_msg_session_load_res
 {
   GLUE_HANDLER("sesl_res")
   GLUE_FIELD(bool, success)
+  GLUE_FIELD(int, n_tokens_loaded)
 };
 
 /////////

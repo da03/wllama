@@ -222,6 +222,7 @@ export interface GlueMsgSessionLoadReq {
 export interface GlueMsgSessionLoadRes {
     _name: "sesl_res";
     success: boolean;
+    n_tokens_loaded: number;
 }
 export interface GlueMsgStatusReq {
     _name: "stat_req";

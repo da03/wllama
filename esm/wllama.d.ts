@@ -558,6 +558,16 @@ export declare class Wllama {
      */
     freeLoraAdapter(adapterId: number): Promise<void>;
     /**
+     * Load a precomputed KV cache session from a URL or Blob.
+     * Restores the KV cache state so that previously-processed tokens
+     * don't need to be re-evaluated. Used for prompt prefix caching.
+     *
+     * @param source URL string or Blob containing the session state file
+     * @param tokens The token IDs that were used to generate this session state
+     * @returns Number of tokens loaded into the KV cache
+     */
+    loadSession(source: string | Blob, tokens: number[]): Promise<number>;
+    /**
      * Save session to file (virtual file system)
      * TODO: add ability to download the file
      * @param filePath

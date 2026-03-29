@@ -820,6 +820,11 @@ export const GLUE_MESSAGE_PROTOTYPES: { [name: string]: GlueMessageProto } = {
         "type": "bool",
         "name": "success",
         "isNullable": false
+      },
+      {
+        "type": "int",
+        "name": "n_tokens_loaded",
+        "isNullable": false
       }
     ]
   },
@@ -1336,6 +1341,7 @@ export interface GlueMsgSessionLoadReq {
 export interface GlueMsgSessionLoadRes {
   _name: "sesl_res";
   success: boolean;
+  n_tokens_loaded: number;
 }
 
 // struct glue_msg_status_req
